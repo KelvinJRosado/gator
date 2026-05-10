@@ -90,3 +90,7 @@ func (c Config) SetUser(name string) error {
 
 	return nil
 }
+
+type state struct {
+	Config *Config
+}
