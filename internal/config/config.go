@@ -29,7 +29,7 @@ func write(c Config) error {
 	// Convert from struct to raw JSON
 	data, err := json.Marshal(&c)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	// Get the config file path
@@ -72,7 +72,7 @@ func Read() (*Config, error) {
 
 }
 
-func (c Config) SetUser(name string) error {
+func (c *Config) SetUser(name string) error {
 
 	// Check base case
 	if name == c.CurrentUserName {
@@ -83,7 +83,7 @@ func (c Config) SetUser(name string) error {
 	c.CurrentUserName = name
 
 	// Update config file
-	err := write(c)
+	err := write(*c)
 	if err != nil {
 		return err
 	}

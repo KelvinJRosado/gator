@@ -12,7 +12,7 @@ type Command struct {
 
 type Commands struct {
 	allCommands map[string]func(*State, Command) error
-	mu          *sync.RWMutex
+	mu          sync.RWMutex
 }
 
 func (c *Commands) Run(s *State, cmd Command) error {
@@ -46,11 +46,10 @@ func (c *Commands) Get(name string) (func(*State, Command) error, bool) {
 
 func CreateCommandsRegistry() *Commands {
 	// Init vars
-	mu := sync.RWMutex{}
 	cmds := make(map[string]func(*State, Command) error)
 	res := Commands{
 		allCommands: cmds,
-		mu:          &mu,
+		mu:          sync.RWMutex{},
 	}
 
 	return &res
