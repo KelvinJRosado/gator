@@ -62,13 +62,13 @@ func Read() (*Config, error) {
 	}
 
 	// Convert from raw json to struct
-	var config *Config
+	var config Config
 	err = json.Unmarshal(data, &config)
 	if err != nil {
 		return nil, err
 	}
 
-	return config, nil
+	return &config, nil
 
 }
 
