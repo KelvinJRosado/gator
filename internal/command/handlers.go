@@ -7,11 +7,11 @@ import (
 
 func HandlerLogin(s *State, cmd Command) error {
 	// Check base case
-	if len(cmd.args) == 0 {
+	if len(cmd.Args) == 0 {
 		return errors.New("username not provided for login")
 	}
 
-	name := cmd.args[0]
+	name := cmd.Args[0]
 
 	// Attempt to change name
 	err := s.Cfg.SetUser(name)

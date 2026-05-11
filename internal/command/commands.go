@@ -1,12 +1,13 @@
 package command
 
 import (
+	"errors"
 	"sync"
 )
 
 type Command struct {
-	name string
-	args []string
+	Name string
+	Args []string
 }
 
 type Commands struct {
@@ -14,13 +15,17 @@ type Commands struct {
 	mu          *sync.RWMutex
 }
 
-func (c *Commands) run(s *State, cmd Command) error {
-	err := c.run(s, cmd)
-	if err != nil {
-		return err
+func (c *Commands) Run(s *State, cmd Command) error {
+
+	// Check for valid command
+	f, ok := c.Get(cmd.Name)
+
+	if !ok {
+		return errors.New("command not found")
 	}
 
-	return nil
+	// Call handler
+	return f(s, cmd)
 }
 
 func (c *Commands) Register(name string, f func(*State, Command) error) {
@@ -28,6 +33,15 @@ func (c *Commands) Register(name string, f func(*State, Command) error) {
 	defer c.mu.Unlock()
 
 	c.allCommands[name] = f
+}
+
+func (c *Commands) Get(name string) (func(*State, Command) error, bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	res, ok := c.allCommands[name]
+
+	return res, ok
 }
 
 func CreateCommandsRegistry() *Commands {
