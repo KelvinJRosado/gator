@@ -68,3 +68,22 @@ func HandlerRegister(s *State, cmd Command) error {
 
 	return nil
 }
+
+func HandlerReset(s *State, cmd Command) error {
+
+	// Attempt to delete from DB
+	err := s.Db.DeleteAllUsers(context.Background())
+	if err != nil {
+		return err
+	}
+
+	// Attempt to change name
+	err = s.Cfg.SetUser("")
+	if err != nil {
+		return err
+	}
+
+	slog.Info("Successfully reset user table")
+
+	return nil
+}
