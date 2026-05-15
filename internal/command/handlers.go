@@ -35,7 +35,7 @@ func HandlerLogin(s *State, cmd Command) error {
 	return nil
 }
 
-func HandlerRegister (s *State, cmd Command) error {
+func HandlerRegister(s *State, cmd Command) error {
 	// Check base case
 	if len(cmd.Args) == 0 {
 		return errors.New("username not provided for login")
@@ -46,10 +46,10 @@ func HandlerRegister (s *State, cmd Command) error {
 
 	// Create user args
 	dbArgs := database.CreateUserParams{
-		ID: uuid.New(),
+		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		Name: name,
+		Name:      name,
 	}
 
 	// Attempt to insert into DB
