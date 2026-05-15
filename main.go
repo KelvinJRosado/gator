@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"errors"
 	"log"
 	"os"
 
@@ -51,12 +50,6 @@ func main() {
 
 	err = cmds.Run(&st, userCommand)
 	if err != nil {
-
-		// Exit with status code 1 for duplicate user
-		if errors.Is(err, command.UserAlreadyExists) {
-			os.Exit(1)
-		}
-
 		log.Fatalf("error running command: %v", err)
 	}
 
