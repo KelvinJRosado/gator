@@ -14,7 +14,7 @@ import (
 
 func HandlerLogin(s *State, cmd Command) error {
 	// Check base case
-	if len(cmd.Args) == 0 {
+	if len(cmd.Args) != 1 {
 		return errors.New("username not provided for login")
 	}
 
@@ -39,7 +39,7 @@ func HandlerLogin(s *State, cmd Command) error {
 
 func HandlerRegister(s *State, cmd Command) error {
 	// Check base case
-	if len(cmd.Args) == 0 {
+	if len(cmd.Args) != 1 {
 		return errors.New("username not provided for login")
 	}
 
@@ -118,6 +118,39 @@ func HandlerAgg(s *State, cmd Command) error {
 
 	// Print rss feed from given URL
 	err := rss.PrintFeed(feedUrl)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func HandlerAddFeed(s *State, cmd Command) error {
+
+	// Check base case
+	if len(cmd.Args) != 2 {
+		return errors.New("Feed name and URL must be given")
+	}
+
+	feedName := cmd.Args[0]
+	feedUrl := cmd.Args[1]
+
+	// Get current user
+	user, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	dbArgs := database.CreateFeedParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      feedName,
+		Url:       feedUrl,
+		UserID:    user.ID,
+	}
+
+	_, err = s.Db.CreateFeed(context.Background(), dbArgs)
 	if err != nil {
 		return err
 	}
