@@ -29,8 +29,8 @@ SELECT
   users.name as user_name,
   feeds.name as feed_name
 FROM
-  new_row
-  INNER JOIN users ON feed_follows.user_id = users.id
+  users
+  INNER JOIN new_row ON feed_follows.user_id = users.id
   INNER JOIN feeds on feed_follows.feed_id = feeds.id
 `
 
