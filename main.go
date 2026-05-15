@@ -36,7 +36,7 @@ func main() {
 	// Create commands registry
 	cmds := command.CreateCommandsRegistry()
 	cmds.Register("login", command.HandlerLogin)
-	cmds.Register("login", command.HandlerRegister)
+	cmds.Register("register", command.HandlerRegister)
 
 	// Grab CLI args
 	if len(os.Args) < 2 {
