@@ -157,3 +157,23 @@ func HandlerAddFeed(s *State, cmd Command) error {
 
 	return nil
 }
+
+func HandlerFeeds(s *State, cmd Command) error {
+
+	// Get feeds from db
+	feeds, err := s.Db.GetAllFeeds(context.Background())
+	if err != nil {
+		return err
+	}
+
+	// Base case
+	if len(feeds) == 0 {
+		fmt.Println("No feeds currently saved")
+	}
+
+	for _, item := range feeds {
+		fmt.Printf("Name: %v, URL: %v, Owner: %v\n", item.Feed.Name, item.Feed.Url, item.User.Name)
+	}
+
+	return nil
+}

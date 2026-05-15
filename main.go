@@ -40,6 +40,7 @@ func main() {
 	cmds.Register("users", command.HandlerUsers)
 	cmds.Register("agg", command.HandlerAgg)
 	cmds.Register("addfeed", command.HandlerAddFeed)
+	cmds.Register("feeds", command.HandlerFeeds)
 
 	// Grab CLI args
 	if len(os.Args) < 2 {
