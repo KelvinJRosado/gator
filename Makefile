@@ -1,11 +1,14 @@
 BINARY := gator
+CONFIG_PATH := $(HOME)/.gatorconfig.json
+DB_URL := $(shell awk -F'"' '/"db_url"[[:space:]]*:/ {print $$4; exit}' "$(CONFIG_PATH)" 2>/dev/null)
+MIGRATIONS_DIR := sql/schema
 
 .DEFAULT_GOAL := help
 
-.PHONY: help run build test test-race cover fmt fmt-check vet vet-shadow tidy tidy-check ci clean
+.PHONY: help run build test test-race cover fmt fmt-check vet vet-shadow tidy tidy-check sqlc migrate-up migrate-down migrate-status migrate-create ci clean
 
 help: ## Show available targets
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 run: ## Run the CLI
 	go run .
@@ -51,6 +54,25 @@ tidy-check: ## Fail if go.mod/go.sum would change (matches CI)
 		echo "go.mod or go.sum changed. Run 'make tidy' and commit the result."; \
 		exit 1; \
 	fi
+
+sqlc: ## Generate Go database code from SQL
+	sqlc generate
+
+migrate-up: ## Apply all pending database migrations
+	@test -n "$(DB_URL)" || (echo "db_url not found in $(CONFIG_PATH)"; exit 1)
+	@goose -dir $(MIGRATIONS_DIR) postgres "$(DB_URL)" up
+
+migrate-down: ## Roll back the latest database migration
+	@test -n "$(DB_URL)" || (echo "db_url not found in $(CONFIG_PATH)"; exit 1)
+	@goose -dir $(MIGRATIONS_DIR) postgres "$(DB_URL)" down
+
+migrate-status: ## Show database migration status
+	@test -n "$(DB_URL)" || (echo "db_url not found in $(CONFIG_PATH)"; exit 1)
+	@goose -dir $(MIGRATIONS_DIR) postgres "$(DB_URL)" status
+
+migrate-create: ## Create a new migration (usage: make migrate-create NAME=add_table)
+	@test -n "$(NAME)" || (echo "usage: make migrate-create NAME=add_table"; exit 1)
+	goose -dir $(MIGRATIONS_DIR) create $(NAME) sql
 
 ci: fmt-check vet vet-shadow cover build tidy-check ## Run the same checks CI runs
 
