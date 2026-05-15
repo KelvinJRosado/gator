@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// Login as existing user
 func HandlerLogin(s *State, cmd Command) error {
 	// Check base case
 	if len(cmd.Args) != 1 {
@@ -37,6 +38,7 @@ func HandlerLogin(s *State, cmd Command) error {
 	return nil
 }
 
+// Register new user
 func HandlerRegister(s *State, cmd Command) error {
 	// Check base case
 	if len(cmd.Args) != 1 {
@@ -66,11 +68,12 @@ func HandlerRegister(s *State, cmd Command) error {
 		return err
 	}
 
-	slog.Info("Successfully registered new user", "username", name)
+	slog.Info("Successfully registered new user", "username", name, "id", dbArgs.ID)
 
 	return nil
 }
 
+// Delete all users
 func HandlerReset(s *State, cmd Command) error {
 
 	// Attempt to delete from DB
@@ -90,6 +93,7 @@ func HandlerReset(s *State, cmd Command) error {
 	return nil
 }
 
+// Print all users
 func HandlerUsers(s *State, cmd Command) error {
 	users, err := s.Db.GetAllUsers(context.Background())
 	if err != nil {
@@ -111,6 +115,7 @@ func HandlerUsers(s *State, cmd Command) error {
 	return nil
 }
 
+// Test RSS call
 func HandlerAgg(s *State, cmd Command) error {
 
 	// Using hard-coded value for testing
@@ -125,6 +130,7 @@ func HandlerAgg(s *State, cmd Command) error {
 	return nil
 }
 
+// Save new feed record
 func HandlerAddFeed(s *State, cmd Command) error {
 
 	// Check base case
@@ -155,9 +161,12 @@ func HandlerAddFeed(s *State, cmd Command) error {
 		return err
 	}
 
+	slog.Info("Successfully added new feed", "feedUrl", feedUrl, "id", dbArgs.ID)
+
 	return nil
 }
 
+// Get details for all feeds
 func HandlerFeeds(s *State, cmd Command) error {
 
 	// Get feeds from db
@@ -174,6 +183,44 @@ func HandlerFeeds(s *State, cmd Command) error {
 	for _, item := range feeds {
 		fmt.Printf("Name: %v, URL: %v, Owner: %v\n", item.Name, item.Url, item.UserName)
 	}
+
+	return nil
+}
+
+// Floow an existing feed
+func HandlerFollow(s *State, cmd Command) error {
+
+	// Base case
+	if len(cmd.Args) != 1 {
+		return errors.New("Feed URL must be provided")
+	}
+
+	// Get current user
+	user, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	// Get existing feed
+	feed, err := s.Db.GetFeedByUrl(context.Background(), cmd.Args[0])
+	if err != nil {
+		return err
+	}
+
+	// Create new follow record
+	dbArgs := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	}
+	_, err = s.Db.CreateFeedFollow(context.Background(), dbArgs)
+	if err != nil {
+		return err
+	}
+
+	slog.Info("Successfully followed feed", "username", user.Name, "feedUrl", feed.Url, "id", dbArgs.ID)
 
 	return nil
 }
