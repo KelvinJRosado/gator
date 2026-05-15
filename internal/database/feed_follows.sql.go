@@ -30,8 +30,8 @@ SELECT
   feeds.name as feed_name
 FROM
   users
-  INNER JOIN new_row ON feed_follows.user_id = users.id
-  INNER JOIN feeds on feed_follows.feed_id = feeds.id
+  INNER JOIN new_row ON new_row.user_id = users.id
+  INNER JOIN feeds on new_row.feed_id = feeds.id
 `
 
 type CreateFeedFollowParams struct {
