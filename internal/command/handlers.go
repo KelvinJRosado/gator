@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/KelvinJRosado/gator/internal/database"
+	"github.com/KelvinJRosado/gator/internal/rss"
 	"github.com/google/uuid"
 )
 
@@ -105,6 +106,20 @@ func HandlerUsers(s *State, cmd Command) error {
 		} else {
 			fmt.Printf("* %v\n", usr.Name)
 		}
+	}
+
+	return nil
+}
+
+func HandlerAgg(s *State, cmd Command) error {
+
+	// Using hard-coded value for testing
+	feedUrl := "https://www.wagslane.dev/index.xml"
+
+	// Print rss feed from given URL
+	err := rss.PrintFeed(feedUrl)
+	if err != nil {
+		return err
 	}
 
 	return nil
