@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -21,7 +22,7 @@ func HandlerLogin(s *State, cmd Command) error {
 	// Attempt to grab from DB
 	_, err := s.Db.GetUser(context.Background(), name)
 	if err != nil {
-		return UserDoesNotExist
+		return err
 	}
 
 	// Attempt to change name
@@ -55,7 +56,7 @@ func HandlerRegister(s *State, cmd Command) error {
 	// Attempt to insert into DB
 	_, err := s.Db.CreateUser(context.Background(), dbArgs)
 	if err != nil {
-		return UserAlreadyExists
+		return err
 	}
 
 	// Attempt to change name
@@ -84,6 +85,27 @@ func HandlerReset(s *State, cmd Command) error {
 	}
 
 	slog.Info("Successfully reset user table")
+
+	return nil
+}
+
+func HandlerUsers(s *State, cmd Command) error {
+	users, err := s.Db.GetAllUsers(context.Background())
+	if err != nil {
+		return err
+	}
+
+	if len(users) == 0 {
+		fmt.Println("No users found")
+	}
+
+	for _, usr := range users {
+		if s.Cfg.CurrentUserName == usr.Name {
+			fmt.Printf("* %v (current)\n", usr.Name)
+		} else {
+			fmt.Printf("* %v\n", usr.Name)
+		}
+	}
 
 	return nil
 }
