@@ -46,10 +46,19 @@ func HandlerRegister (s *State, cmd Command) error {
 		Name: name,
 	}
 
+	// Attempt to insert into DB
 	_, err := s.Db.CreateUser(context.Background(), dbArgs)
 	if err != nil {
 		return UserAlreadyExists
 	}
+
+	// Attempt to change name
+	err = s.Cfg.SetUser(name)
+	if err != nil {
+		return err
+	}
+
+	slog.Info("Successfully registered new user", "username", name)
 
 	return nil
 }
