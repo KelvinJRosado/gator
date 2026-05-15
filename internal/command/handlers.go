@@ -18,8 +18,14 @@ func HandlerLogin(s *State, cmd Command) error {
 
 	name := cmd.Args[0]
 
+	// Attempt to grab from DB
+	_, err := s.Db.GetUser(context.Background(), name)
+	if err != nil {
+		return UserDoesNotExist
+	}
+
 	// Attempt to change name
-	err := s.Cfg.SetUser(name)
+	err = s.Cfg.SetUser(name)
 	if err != nil {
 		return err
 	}
