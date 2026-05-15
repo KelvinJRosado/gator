@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 	"os"
 
@@ -35,6 +36,7 @@ func main() {
 	// Create commands registry
 	cmds := command.CreateCommandsRegistry()
 	cmds.Register("login", command.HandlerLogin)
+	cmds.Register("login", command.HandlerRegister)
 
 	// Grab CLI args
 	if len(os.Args) < 2 {
@@ -49,6 +51,12 @@ func main() {
 
 	err = cmds.Run(&st, userCommand)
 	if err != nil {
+
+		// Exit with status code 1 for duplicate user
+		if errors.Is(err, command.UserAlreadyExists) {
+			os.Exit(1)
+		}
+
 		log.Fatalf("error running command: %v", err)
 	}
 
