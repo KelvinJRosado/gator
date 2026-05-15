@@ -13,4 +13,6 @@ SELECT
   updated_at,
   name
 FROM
-  users;
+  users
+WHERE
+  name = $1;
