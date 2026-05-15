@@ -172,7 +172,7 @@ func HandlerFeeds(s *State, cmd Command) error {
 	}
 
 	for _, item := range feeds {
-		fmt.Printf("Name: %v, URL: %v, Owner: %v\n", item.Feed.Name, item.Feed.Url, item.User.Name)
+		fmt.Printf("Name: %v, URL: %v, Owner: %v\n", item.Name, item.Url, item.UserName)
 	}
 
 	return nil

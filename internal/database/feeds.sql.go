@@ -53,20 +53,28 @@ func (q *Queries) CreateFeed(ctx context.Context, arg CreateFeedParams) (Feed, e
 
 const getAllFeeds = `-- name: GetAllFeeds :many
 SELECT
-  /* sql-formatter-disable */
-  feeds.id, feeds.created_at, feeds.updated_at, feeds.name, feeds.url, feeds.user_id,
-  users.id, users.created_at, users.updated_at, users.name
+  feeds.id,
+  feeds.created_at,
+  feeds.updated_at,
+  feeds.name,
+  feeds.url,
+  feeds.user_id,
+  users.name AS user_name
 FROM
   feeds
   INNER JOIN users ON feeds.user_id = users.id
 `
 
 type GetAllFeedsRow struct {
-	Feed Feed
-	User User
+	ID        uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Name      string
+	Url       string
+	UserID    uuid.UUID
+	UserName  string
 }
 
-// sql-formatter-enable
 func (q *Queries) GetAllFeeds(ctx context.Context) ([]GetAllFeedsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getAllFeeds)
 	if err != nil {
@@ -77,16 +85,13 @@ func (q *Queries) GetAllFeeds(ctx context.Context) ([]GetAllFeedsRow, error) {
 	for rows.Next() {
 		var i GetAllFeedsRow
 		if err := rows.Scan(
-			&i.Feed.ID,
-			&i.Feed.CreatedAt,
-			&i.Feed.UpdatedAt,
-			&i.Feed.Name,
-			&i.Feed.Url,
-			&i.Feed.UserID,
-			&i.User.ID,
-			&i.User.CreatedAt,
-			&i.User.UpdatedAt,
-			&i.User.Name,
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.Url,
+			&i.UserID,
+			&i.UserName,
 		); err != nil {
 			return nil, err
 		}
