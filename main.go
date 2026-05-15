@@ -1,23 +1,35 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"os"
 
 	"github.com/KelvinJRosado/gator/internal/command"
 	"github.com/KelvinJRosado/gator/internal/config"
+	"github.com/KelvinJRosado/gator/internal/database"
+	_ "github.com/lib/pq"
 )
 
 func main() {
 	// Load config file
-	c, err := config.Read()
+	cfg, err := config.Read()
 	if err != nil {
 		log.Fatalf("error opening config: %v", err)
 	}
 
+	// Connect to DB
+	db, err := sql.Open("postgres", cfg.DbUrl)
+	if err != nil {
+		log.Fatalf("error connecting to database: %v", err)
+	}
+
+	dbQueries := database.New(db)
+
 	// Create state
 	st := command.State{
-		Cfg: c,
+		Db:  dbQueries,
+		Cfg: cfg,
 	}
 
 	// Create commands registry
