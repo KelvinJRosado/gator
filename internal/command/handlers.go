@@ -156,12 +156,27 @@ func HandlerAddFeed(s *State, cmd Command) error {
 		UserID:    user.ID,
 	}
 
-	_, err = s.Db.CreateFeed(context.Background(), dbArgs)
+	newFeed, err := s.Db.CreateFeed(context.Background(), dbArgs)
 	if err != nil {
 		return err
 	}
 
 	slog.Info("Successfully added new feed", "feedUrl", feedUrl, "id", dbArgs.ID)
+
+	dbArgs2 := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID,
+		FeedID:    newFeed.ID,
+	}
+
+	_, err = s.Db.CreateFeedFollow(context.Background(), dbArgs2)
+	if err != nil {
+		return err
+	}
+
+	slog.Info("Successfully followed new feed", "feedUrl", feedUrl, "id", dbArgs2.ID)
 
 	return nil
 }
@@ -245,7 +260,7 @@ func HandlerFollowing(s *State, cmd Command) error {
 	}
 
 	for _, item := range feedFollows {
-		fmt.Printf("* %vn", item.FeedName)
+		fmt.Printf("* %v\n", item.FeedName)
 	}
 
 	return nil
