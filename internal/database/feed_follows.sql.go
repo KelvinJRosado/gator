@@ -14,7 +14,7 @@ import (
 
 const createFeedFollow = `-- name: CreateFeedFollow :one
 WITH
-  new_row as (
+  new_row AS (
     INSERT INTO
       feed_follows (id, created_at, updated_at, user_id, feed_id)
     VALUES
@@ -26,12 +26,12 @@ SELECT
   new_row.id,
   new_row.created_at,
   new_row.updated_at,
-  users.name as user_name,
-  feeds.name as feed_name
+  users.name AS user_name,
+  feeds.name AS feed_name
 FROM
   users
   INNER JOIN new_row ON new_row.user_id = users.id
-  INNER JOIN feeds on new_row.feed_id = feeds.id
+  INNER JOIN feeds ON new_row.feed_id = feeds.id
 `
 
 type CreateFeedFollowParams struct {
@@ -69,17 +69,28 @@ func (q *Queries) CreateFeedFollow(ctx context.Context, arg CreateFeedFollowPara
 	return i, err
 }
 
+const deleteFeedFollowsForUser = `-- name: DeleteFeedFollowsForUser :exec
+DELETE FROM feed_follows
+WHERE
+  id = $1
+`
+
+func (q *Queries) DeleteFeedFollowsForUser(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteFeedFollowsForUser, id)
+	return err
+}
+
 const getFeedFollowsForUser = `-- name: GetFeedFollowsForUser :many
 SELECT
   feed_follows.id,
   feed_follows.created_at,
   feed_follows.updated_at,
-  users.name as user_name,
-  feeds.name as feed_name
+  users.name AS user_name,
+  feeds.name AS feed_name
 FROM
   users
   INNER JOIN feed_follows ON feed_follows.user_id = users.id
-  INNER JOIN feeds on feed_follows.feed_id = feeds.id
+  INNER JOIN feeds ON feed_follows.feed_id = feeds.id
 WHERE
   users.name = $1
 `
