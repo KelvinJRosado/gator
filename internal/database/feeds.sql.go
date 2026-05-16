@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -65,6 +66,7 @@ SELECT
   feeds.id,
   feeds.created_at,
   feeds.updated_at,
+  feeds.last_fetched_at,
   feeds.name,
   feeds.url,
   users.name AS user_name
@@ -74,12 +76,13 @@ FROM
 `
 
 type GetAllFeedsRow struct {
-	ID        uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Name      string
-	Url       string
-	UserName  string
+	ID            uuid.UUID
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	LastFetchedAt sql.NullTime
+	Name          string
+	Url           string
+	UserName      string
 }
 
 func (q *Queries) GetAllFeeds(ctx context.Context) ([]GetAllFeedsRow, error) {
@@ -95,6 +98,7 @@ func (q *Queries) GetAllFeeds(ctx context.Context) ([]GetAllFeedsRow, error) {
 			&i.ID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.LastFetchedAt,
 			&i.Name,
 			&i.Url,
 			&i.UserName,
@@ -117,6 +121,7 @@ SELECT
   feeds.id,
   feeds.created_at,
   feeds.updated_at,
+  feeds.last_fetched_at,
   feeds.name,
   feeds.url,
   users.name AS user_name
@@ -128,12 +133,13 @@ WHERE
 `
 
 type GetFeedByUrlRow struct {
-	ID        uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Name      string
-	Url       string
-	UserName  string
+	ID            uuid.UUID
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	LastFetchedAt sql.NullTime
+	Name          string
+	Url           string
+	UserName      string
 }
 
 func (q *Queries) GetFeedByUrl(ctx context.Context, url string) (GetFeedByUrlRow, error) {
@@ -143,6 +149,7 @@ func (q *Queries) GetFeedByUrl(ctx context.Context, url string) (GetFeedByUrlRow
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastFetchedAt,
 		&i.Name,
 		&i.Url,
 		&i.UserName,
