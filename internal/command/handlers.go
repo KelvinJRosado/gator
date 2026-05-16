@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"sync"
 	"time"
 
 	"github.com/KelvinJRosado/gator/internal/database"
-	"github.com/KelvinJRosado/gator/internal/rss"
 	"github.com/google/uuid"
 )
 
@@ -118,14 +118,41 @@ func HandlerUsers(s *State, cmd Command) error {
 // Test RSS call
 func HandlerAgg(s *State, cmd Command) error {
 
-	// Using hard-coded value for testing
-	feedUrl := "https://www.wagslane.dev/index.xml"
+	// Base case
+	if len(cmd.Args) != 1 {
+		return errors.New("Fetch frequency must be given")
+	}
 
-	// Print rss feed from given URL
-	err := rss.PrintFeed(feedUrl)
+	// Parse frequency
+	timeBetweenReqs, err := time.ParseDuration(cmd.Args[0])
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Collecting feeds every %v\n", timeBetweenReqs)
+
+	// Create waitgroup to avoid early exit
+	var wg sync.WaitGroup
+
+	// Create ticker and start scraping
+	ticker := time.NewTicker(timeBetweenReqs)
+	wg.Go(func() {
+
+		// Initial call
+		err := scrapeFeeds(s)
+		if err != nil {
+			slog.Error("Error scraping feeds", "error", err)
+		}
+
+		// Continuous call
+		for range ticker.C {
+			err := scrapeFeeds(s)
+			if err != nil {
+				slog.Error("Error scraping feeds", "error", err)
+			}
+		}
+	})
+
+	wg.Wait()
 
 	return nil
 }
