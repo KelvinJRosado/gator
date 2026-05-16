@@ -141,3 +141,34 @@ func (q *Queries) GetFeedByUrl(ctx context.Context, url string) (GetFeedByUrlRow
 	)
 	return i, err
 }
+
+const markFeedFetched = `-- name: MarkFeedFetched :one
+UPDATE feeds
+SET
+  updated_at = $1,
+  last_fetched_at = $1
+WHERE
+  id = $2
+RETURNING
+  id, created_at, updated_at, name, url, user_id, last_fetched_at
+`
+
+type MarkFeedFetchedParams struct {
+	UpdatedAt time.Time
+	ID        uuid.UUID
+}
+
+func (q *Queries) MarkFeedFetched(ctx context.Context, arg MarkFeedFetchedParams) (Feed, error) {
+	row := q.db.QueryRowContext(ctx, markFeedFetched, arg.UpdatedAt, arg.ID)
+	var i Feed
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.Url,
+		&i.UserID,
+		&i.LastFetchedAt,
+	)
+	return i, err
+}
