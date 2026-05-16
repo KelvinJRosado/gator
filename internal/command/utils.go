@@ -40,7 +40,9 @@ func scrapeFeeds(s *State) error {
 
 	// Print the title of each item in feed
 	for _, item := range feedData.Channel.Item {
-		fmt.Printf("* %v\n", item.Title)
+		if len(item.Title) > 0 {
+			fmt.Printf("* %v\n", item.Title)
+		}
 	}
 
 	return nil
