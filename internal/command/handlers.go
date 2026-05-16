@@ -224,3 +224,29 @@ func HandlerFollow(s *State, cmd Command) error {
 
 	return nil
 }
+
+// Get details for all feeds followed by current user
+func HandlerFollowing(s *State, cmd Command) error {
+
+	// Get current user
+	user, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	feedFollows, err := s.Db.GetFeedFollowsForUser(context.Background(), user.Name)
+	if err != nil {
+		return err
+	}
+
+	// Base case
+	if len(feedFollows) == 0 {
+		fmt.Println("No feeds currently followed by logged in user")
+	}
+
+	for _, item := range feedFollows {
+		fmt.Printf("* %vn", item.FeedName)
+	}
+
+	return nil
+}
