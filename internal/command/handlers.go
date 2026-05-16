@@ -228,6 +228,50 @@ func HandlerFollow(s *State, cmd Command, user database.User) error {
 	return nil
 }
 
+// Stop following an existing feed
+func HandlerUnfollow(s *State, cmd Command, user database.User) error {
+
+	// Base case
+	if len(cmd.Args) != 1 {
+		return errors.New("Feed URL must be provided")
+	}
+
+	feedFollows, err := s.Db.GetFeedFollowsForUser(context.Background(), user.Name)
+	if err != nil {
+		return err
+	}
+
+	unfollowed := false
+
+	for _, feedFollow := range feedFollows {
+
+		// Skip until we get to specified feed
+		if feedFollow.FeedUrl != cmd.Args[0] {
+			continue
+		}
+
+		// If we get here, this is a valid case and we can delete from table
+		dbArgs := database.DeleteFeedFollowsForUserParams{
+			UserID: user.ID,
+			FeedID: feedFollow.FeedID,
+		}
+		err := s.Db.DeleteFeedFollowsForUser(context.Background(), dbArgs)
+		if err != nil {
+			return err
+		}
+		unfollowed = true
+
+	}
+
+	if unfollowed {
+		slog.Info("Successfully unfollowed feed", "username", user.Name, "feedUrl", cmd.Args[0])
+		return nil
+	} else {
+		return errors.New("Feed not followed by current user")
+	}
+
+}
+
 // Get details for all feeds followed by current user
 func HandlerFollowing(s *State, cmd Command, user database.User) error {
 
