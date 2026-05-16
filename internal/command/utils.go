@@ -40,13 +40,6 @@ func scrapeFeeds(s *State) error {
 		return err
 	}
 
-	// Print the title of each item in feed
-	for _, item := range feedData.Channel.Item {
-		if len(item.Title) > 0 {
-			fmt.Printf("* %v\n", item.Title)
-		}
-	}
-
 	// Save each post to DB
 	for _, item := range feedData.Channel.Item {
 
