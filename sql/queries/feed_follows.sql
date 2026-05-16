@@ -26,7 +26,8 @@ SELECT
   feed_follows.updated_at,
   users.name AS user_name,
   feeds.name AS feed_name,
-  feeds.url AS feed_url
+  feeds.url AS feed_url,
+  feeds.id AS feed_id
 FROM
   users
   INNER JOIN feed_follows ON feed_follows.user_id = users.id
