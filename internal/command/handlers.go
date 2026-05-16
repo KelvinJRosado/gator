@@ -131,7 +131,7 @@ func HandlerAgg(s *State, cmd Command) error {
 }
 
 // Save new feed record
-func HandlerAddFeed(s *State, cmd Command) error {
+func HandlerAddFeed(s *State, cmd Command, user database.User) error {
 
 	// Check base case
 	if len(cmd.Args) != 2 {
@@ -140,12 +140,6 @@ func HandlerAddFeed(s *State, cmd Command) error {
 
 	feedName := cmd.Args[0]
 	feedUrl := cmd.Args[1]
-
-	// Get current user
-	user, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUserName)
-	if err != nil {
-		return err
-	}
 
 	dbArgs := database.CreateFeedParams{
 		ID:        uuid.New(),
@@ -202,18 +196,12 @@ func HandlerFeeds(s *State, cmd Command) error {
 	return nil
 }
 
-// Floow an existing feed
-func HandlerFollow(s *State, cmd Command) error {
+// Follow an existing feed
+func HandlerFollow(s *State, cmd Command, user database.User) error {
 
 	// Base case
 	if len(cmd.Args) != 1 {
 		return errors.New("Feed URL must be provided")
-	}
-
-	// Get current user
-	user, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUserName)
-	if err != nil {
-		return err
 	}
 
 	// Get existing feed
@@ -241,13 +229,7 @@ func HandlerFollow(s *State, cmd Command) error {
 }
 
 // Get details for all feeds followed by current user
-func HandlerFollowing(s *State, cmd Command) error {
-
-	// Get current user
-	user, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUserName)
-	if err != nil {
-		return err
-	}
+func HandlerFollowing(s *State, cmd Command, user database.User) error {
 
 	feedFollows, err := s.Db.GetFeedFollowsForUser(context.Background(), user.Name)
 	if err != nil {
