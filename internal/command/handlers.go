@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"sync"
 	"time"
 
@@ -115,7 +116,7 @@ func HandlerUsers(s *State, cmd Command) error {
 	return nil
 }
 
-// Test RSS call
+// Refresh posts in database
 func HandlerAgg(s *State, cmd Command) error {
 
 	// Base case
@@ -314,6 +315,43 @@ func HandlerFollowing(s *State, cmd Command, user database.User) error {
 
 	for _, item := range feedFollows {
 		fmt.Printf("* %v\n", item.FeedName)
+	}
+
+	return nil
+}
+
+// Retrieve posts from followed feeds
+func HandlerBrowse(s *State, cmd Command, user database.User) error {
+
+	var postLimit int32
+
+	// Base case
+	if len(cmd.Args) != 1 {
+		fmt.Println("Defaulting to 2 posts because exactly one argument was not provided")
+		postLimit = 2
+	} else {
+		limit, err := strconv.Atoi(cmd.Args[0])
+		if err != nil {
+			return errors.New("Limit value is invalid.\n")
+		}
+		postLimit = int32(limit)
+	}
+
+	dbArgs := database.GetPostsForUserParams{
+		Name:  user.Name,
+		Limit: postLimit,
+	}
+	posts, err := s.Db.GetPostsForUser(context.Background(), dbArgs)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range posts {
+		fmt.Printf("* Title: %v\n", item.Title.String)
+		fmt.Printf("  Description: %v\n", item.Description.String)
+		fmt.Printf("  Url: %v\n", item.Url)
+		fmt.Printf("  PublishedAt: %v\n", item.PublishedAt)
+		fmt.Printf("  FeedName: %v\n", item.FeedName)
 	}
 
 	return nil

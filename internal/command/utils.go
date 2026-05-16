@@ -2,12 +2,14 @@ package command
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log/slog"
 	"time"
 
 	"github.com/KelvinJRosado/gator/internal/database"
 	"github.com/KelvinJRosado/gator/internal/rss"
+	"github.com/google/uuid"
 )
 
 func scrapeFeeds(s *State) error {
@@ -42,6 +44,30 @@ func scrapeFeeds(s *State) error {
 	for _, item := range feedData.Channel.Item {
 		if len(item.Title) > 0 {
 			fmt.Printf("* %v\n", item.Title)
+		}
+	}
+
+	// Save each post to DB
+	for _, item := range feedData.Channel.Item {
+
+		parsedTime, err := time.Parse(time.RFC1123, item.PubDate)
+		if err != nil {
+			return err
+		}
+
+		dbArgs2 := database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+			Title:       sql.NullString{String: item.Title, Valid: len(item.Title) > 0},
+			Url:         item.Link,
+			Description: sql.NullString{String: item.Description, Valid: len(item.Description) > 0},
+			PublishedAt: parsedTime,
+			FeedID:      feed.ID,
+		}
+		_, err = s.Db.CreatePost(context.Background(), dbArgs2)
+		if err != nil {
+			return err
 		}
 	}
 
